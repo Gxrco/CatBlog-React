@@ -11,6 +11,7 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/prop-types/prop-types.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>@keyframes rotate { 100% { transform: rotate(360deg); }}</style>
 </head>
 
 <body>
@@ -20,8 +21,40 @@
         const { Suspense } = React;
 
         const LoadingComponent = () => {
+
+            const mainContainer = {
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+            };
+
+            const containerStyles = {
+                width: '350px',
+                height: '350px',
+                borderRadius: '100%',
+                background: 'linear-gradient(165deg, rgba(255,255,255,1) 0%, rgb(220, 220, 220) 40%, rgb(170, 170, 170) 98%, rgb(10, 10, 10) 100%)',
+                position: 'relative',
+            };
+
+            const loaderStyles = {
+                position: "relative",
+                content: "''",
+                width: '100%',
+                height: '100%',
+                borderRadius: '100%',
+                border: '0 solid #ffffff05',
+                boxShadow: '0 -10px 20px 20px #ffffff40 inset, 0 -5px 15px 10px #ffffff50 inset, 0 -2px 5px #ffffff80 inset, 0 -3px 2px #ffffffBB inset, 0 2px 0px #ffffff, 0 2px 3px #ffffff, 0 5px 5px #ffffff90, 0 10px 15px #ffffff60, 0 10px 20px 20px #ffffff40',
+                filter: 'blur(3px)',
+                animation: 'rotate 2s linear infinite',
+            };
+
             return (
-                <div>Loading posts...</div>
+                <div style={mainContainer}>
+                    <div style={containerStyles}>
+                        <div className="loader" style={loaderStyles}></div>
+                    </div>
+                </div>
             );
         }
 
@@ -129,6 +162,26 @@
             )
         };
 
+        const EmptyPost = () => {
+            const styles = {
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
+                fontSize: '1.5rem',
+                color: '#888',
+                fontFamily: 'Sanchez, sans-serif',
+            }
+
+            return (
+                <li style={styles}>
+                    <h1>No posts available at the moment</h1>
+                    <p>Please check back later.</p>
+                </li>
+            )
+        }
+
         Post.propTypes = {
             title: PropTypes.string.isRequired,
             body: PropTypes.string.isRequired,
@@ -146,8 +199,10 @@
 
             const [posts, setPosts] = React.useState([])
             const [error, setError] = React.useState(null)
+            const [isLoading, setIsLoading] = React.useState(false)
 
             const getPosts = async () => {
+                setIsLoading(true)
                 try {
                     const apiResponse = await fetch('https://api.tiburoncin.lat/22281/posts')
                     if (!apiResponse.ok) {
@@ -161,12 +216,18 @@
                     setPosts(formattedPosts)
                 } catch (error) {
                     setError(error.toString())
+                } finally {
+                    setIsLoading(false)
                 }
             }
 
             React.useEffect(() => {
                 getPosts()
             }, [])
+
+            if (isLoading) {
+                return < LoadingComponent />
+            }
 
             if (error) {
                 return (
@@ -175,11 +236,7 @@
             }
 
             if (posts.length === 0) {
-                return (
-                    <ul style={postsStyles}>
-                        <li>Loading...</li>
-                    </ul>
-                )
+                return <EmptyPost />
             }
 
             return (
