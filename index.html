@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CatBlog-React</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sanchez:ital@0;1&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/prop-types/prop-types.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+        const { Suspense } = React;
+
+        const LoadingComponent = () => {
+            return (
+                <div>Loading posts...</div>
+            );
+        }
+
+        const Header = () => {
+            const styles = {
+                backgroundColor: '#222022',
+                color: 'white',
+                padding: '35px',
+                textAlign: 'center',
+                fontSize: '2rem',
+                fontFamily: 'Sanchez, sans-serif',
+            }
+
+            return (
+                <header style={styles}>
+                    WELCOME TO MY BLOG
+                </header>
+            )
+        }
+
+        const Footer = () => {
+            const styles = {
+                backgroundColor: '#222022',
+                color: 'white',
+                padding: '1rem',
+                textAlign: 'center',
+                fontSize: '12px',
+                fontFamily: 'Sanchez, sans-serif',
+            }
+            return (
+                <footer style={styles}>
+                    Copyright © 2024  UVG | github.com/Gxrco | CatBlog-React
+                </footer>
+            )
+        }
+
+        const Post = ({ title, body, image, created_at }) => {
+            const card = {
+                maxWidth: "960px",
+                borderRadius: "32px",
+                boxShadow: "24px 24px 80px rgba(0, 0, 0, 0.1)",
+                padding: "20px 20px 28px 20px",
+                boxSizing: "border-box",
+                margin: "20px",
+                display: "flex",
+                flexDirection: "column"
+            }
+
+            const cardImage = {
+                width: "100%",
+                maxHeight: "300px",
+                borderRadius: "32px",
+                objectFit: "cover",
+                marginBottom: "18px"
+            }
+
+            const cardContent = {
+                width: "90%",
+                paddingLeft: "40px"
+            }
+
+            const cardDay = {
+                display: "block",
+                fontFamily: "'PT Sans', sans-serif",
+                fontSize: "14px",
+                lineHeight: "2.0",
+                textTransform: "uppercase",
+                color: "#222022",
+                marginBottom: "6px"
+            }
+
+            const cardDate = {
+                display: "block",
+                fontFamily: "'Sanchez'",
+                fontSize: "12px",
+                lineHeight: "2.0",
+                textTransform: "uppercase",
+                color: "#5a5a5a",
+                marginBottom: "6px"
+            }
+
+            const cardTitle = {
+                fontFamily: "'Sanchez', serif",
+                fontSize: "32px",
+                lineHeight: "1.4",
+                color: "#222022",
+                boxDecorationBreak: "clone",
+                backgroundImage: "linear-gradient(90deg, rgb(145, 207, 255), #d887f1)",
+                backgroundSize: "100% 42%",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "0 85%",
+                padding: "0 4px",
+                marginLeft: "-4px"
+            }
+
+            return (
+                <li className="card" style={card}>
+                    <img className="card__image" src={image} alt={title} style={cardImage} />
+                    <div className="card__content" style={cardContent}>
+                        <h1 className="card__day" style={cardDay}>{title}</h1>
+                        <span className="card__title" style={cardTitle}>{body}</span>
+                        <p className="card__date" style={cardDate}>Date: {created_at}</p>
+                    </div>
+                </li>
+            )
+        };
+
+        Post.propTypes = {
+            title: PropTypes.string.isRequired,
+            body: PropTypes.string.isRequired,
+            image: PropTypes.string.isRequired,
+            created_at: PropTypes.string.isRequired
+        };
+
+        const Posts = () => {
+            const postsStyles = {
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+            }
+
+            const [posts, setPosts] = React.useState([])
+
+            const getPosts = async () => {
+                const apiResponse = await fetch('https://api.tiburoncin.lat/22281/posts')
+                const jsonResponse = await apiResponse.json()
+                const jsonPosts = jsonResponse.data
+                const formattedPosts = jsonPosts.map(
+                    ({ title, content, image, created_at }) => ({ title, body: content, image, created_at })
+                )
+                setPosts(formattedPosts)
+            }
+
+            React.useEffect(() => {
+                getPosts()
+            }, [])
+
+            if (posts.length === 0) {
+                return (
+                    <ul style={postsStyles}>
+                        <li>Loading...</li>
+                    </ul>
+                )
+            }
+
+            return (
+                <ul style={postsStyles}>
+                    {posts.map(({ title, body, image, created_at }) => <Post title={title} body={body} image={image} created_at={created_at} />)}
+                </ul>
+            )
+        }
+
+        const InteractionButtons = () => {
+            const styles = {
+                display: 'flex',
+                justifyContent: 'space-around',
+                alignItems: 'center',
+                padding: '10px',
+            }
+
+            const buttonStyles = {
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+            }
+
+            const imgStyles = {
+                width: 'auto',
+                height: '50px',
+            }
+
+            const audioPurr = new Audio('src/purrr.wav');
+            const audioMeow = new Audio('src/meow.mp3');
+            const audioMeeow = new Audio('src/meeow.mp3');
+
+            const playSound = (audio) => {
+                audio.play();
+            }
+
+            return (
+                <div style={styles}>
+                    <button onClick={() => playSound(audioPurr)} style={buttonStyles}>
+                        <img src="src/catVec.png" alt="cat" style={imgStyles} />
+                    </button>
+                    <button onClick={() => playSound(audioMeow)} style={buttonStyles}>
+                        <img src="src/catVec.png" alt="cat" style={imgStyles} />
+                    </button>
+                    <button onClick={() => playSound(audioMeeow)} style={buttonStyles}>
+                        <img src="src/catVec.png" alt="cat" style={imgStyles} />
+                    </button>
+                </div>
+            )
+        }
+
+        const App = () => {
+            return (
+                <main>
+                    <Header />
+                    <InteractionButtons />
+                    <Posts />
+                    <Footer />
+                </main>
+            )
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'))
+        root.render(<App />)
+    </script>
+</body>
+
+</html>
