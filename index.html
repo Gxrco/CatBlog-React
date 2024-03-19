@@ -145,20 +145,34 @@
             }
 
             const [posts, setPosts] = React.useState([])
+            const [error, setError] = React.useState(null)
 
             const getPosts = async () => {
-                const apiResponse = await fetch('https://api.tiburoncin.lat/22281/posts')
-                const jsonResponse = await apiResponse.json()
-                const jsonPosts = jsonResponse.data
-                const formattedPosts = jsonPosts.map(
-                    ({ title, content, image, created_at }) => ({ title, body: content, image, created_at })
-                )
-                setPosts(formattedPosts)
+                try {
+                    const apiResponse = await fetch('https://api.tiburoncin.lat/22281/posts')
+                    if (!apiResponse.ok) {
+                        throw new Error(`HTTP error! status: ${apiResponse.status}`)
+                    }
+                    const jsonResponse = await apiResponse.json()
+                    const jsonPosts = jsonResponse.data
+                    const formattedPosts = jsonPosts.map(
+                        ({ title, content, image, created_at }) => ({ title, body: content, image, created_at })
+                    )
+                    setPosts(formattedPosts)
+                } catch (error) {
+                    setError(error.toString())
+                }
             }
 
             React.useEffect(() => {
                 getPosts()
             }, [])
+
+            if (error) {
+                return (
+                    <div>Error: {error}</div>
+                )
+            }
 
             if (posts.length === 0) {
                 return (
@@ -222,7 +236,9 @@
                 <main>
                     <Header />
                     <InteractionButtons />
-                    <Posts />
+                    <Suspense fallback={<LoadingComponent />}>
+                        <Posts />
+                    </Suspense>
                     <Footer />
                 </main>
             )
